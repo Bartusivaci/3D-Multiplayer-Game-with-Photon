@@ -7,9 +7,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] Transform viewPoint;
     [SerializeField] float mouseSensitivity = 1f;
     [SerializeField] bool invertLook = false;
+    [SerializeField] float playerMoveSpeed = 5f, playerRunSpeed = 8f;
+    [SerializeField] CharacterController characterController;
 
     float verticalRotationStore;
     Vector2 mouseInput;
+    Vector3 moveDirection, movement;
+    float activeMoveSpeed;
 
     // Start is called before the first frame update
     void Start()
@@ -36,6 +40,20 @@ public class PlayerController : MonoBehaviour
             viewPoint.rotation = Quaternion.Euler(-verticalRotationStore, viewPoint.rotation.eulerAngles.y, viewPoint.rotation.eulerAngles.z);
         }
 
-        
+        moveDirection = new Vector3(Input.GetAxisRaw("Horizontal"),0f,Input.GetAxisRaw("Vertical"));
+
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            activeMoveSpeed = playerRunSpeed;
+        }
+        else
+        {
+            activeMoveSpeed = playerMoveSpeed;
+        }
+
+        movement = ((transform.forward * moveDirection.z) + (transform.right * moveDirection.x)).normalized * activeMoveSpeed; //normalized prevents us to move faster in diagonal.
+
+        characterController.Move(movement * Time.deltaTime);
+
     }
 }
