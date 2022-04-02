@@ -9,6 +9,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] bool invertLook = false;
     [SerializeField] float playerMoveSpeed = 5f, playerRunSpeed = 8f;
     [SerializeField] CharacterController characterController;
+    [SerializeField] float jumpForce = 12f, gravityMod = 2.5f;
+    [SerializeField] Transform groundCheckPoint;
+    [SerializeField] LayerMask groundLayers;
+
+
 
     float verticalRotationStore;
     Vector2 mouseInput;
@@ -16,6 +21,8 @@ public class PlayerController : MonoBehaviour
     float activeMoveSpeed;
     Camera cam;
     float yVelocity;
+    bool isGrounded;
+    
 
     // Start is called before the first frame update
     void Start()
@@ -63,9 +70,36 @@ public class PlayerController : MonoBehaviour
             movement.y = 0;
         }
 
-        movement.y += Physics.gravity.y * Time.deltaTime;
+        isGrounded = Physics.Raycast(groundCheckPoint.position, Vector3.down, 0.25f, groundLayers);
+
+        if (Input.GetButtonDown("Jump") && isGrounded)
+        {
+            movement.y = jumpForce;
+        }
+
+        movement.y += Physics.gravity.y * Time.deltaTime * gravityMod;
 
         characterController.Move(movement * Time.deltaTime);
+
+
+        if (Input.GetMouseButtonDown(0))
+        {
+            Shoot();
+        }
+
+
+
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Cursor.lockState = CursorLockMode.None;
+        }
+        else if(Cursor.lockState == CursorLockMode.None)
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+            }
+        }
 
     }
 
@@ -73,5 +107,9 @@ public class PlayerController : MonoBehaviour
     {
         cam.transform.position = viewPoint.position;
         cam.transform.rotation = viewPoint.rotation;
+    }
+
+
+    void Shoot() { 
     }
 }
