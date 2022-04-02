@@ -14,11 +14,14 @@ public class PlayerController : MonoBehaviour
     Vector2 mouseInput;
     Vector3 moveDirection, movement;
     float activeMoveSpeed;
+    Camera cam;
+    float yVelocity;
 
     // Start is called before the first frame update
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+        cam = Camera.main;
     }
 
     // Update is called once per frame
@@ -51,9 +54,24 @@ public class PlayerController : MonoBehaviour
             activeMoveSpeed = playerMoveSpeed;
         }
 
+        yVelocity = movement.y;
         movement = ((transform.forward * moveDirection.z) + (transform.right * moveDirection.x)).normalized * activeMoveSpeed; //normalized prevents us to move faster in diagonal.
+        movement.y = yVelocity;
+
+        if (characterController.isGrounded)
+        {
+            movement.y = 0;
+        }
+
+        movement.y += Physics.gravity.y * Time.deltaTime;
 
         characterController.Move(movement * Time.deltaTime);
 
+    }
+
+    void LateUpdate()
+    {
+        cam.transform.position = viewPoint.position;
+        cam.transform.rotation = viewPoint.rotation;
     }
 }
