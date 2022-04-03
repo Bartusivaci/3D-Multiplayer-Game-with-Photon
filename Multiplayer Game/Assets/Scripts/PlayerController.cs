@@ -36,9 +36,16 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+
         cam = Camera.main;
+
         UIController.instance.weaponHeatSlider.maxValue = maxHeatValue;
+
         SwitchGun();
+
+        Transform newTransform = SpawnManager.instance.GetSpawnPoint();
+        transform.position = newTransform.position;
+        transform.rotation = newTransform.rotation;
     }
 
     // Update is called once per frame
