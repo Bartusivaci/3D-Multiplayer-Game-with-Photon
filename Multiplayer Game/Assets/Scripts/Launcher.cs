@@ -35,6 +35,13 @@ public class Launcher : MonoBehaviourPunCallbacks
     public TMP_Text playerName;
     List<TMP_Text> allPlayerNames = new List<TMP_Text>();
 
+    public GameObject nameInputScreen;
+    public TMP_InputField nameInputField;
+    bool hasSetNickname;
+
+    public string levelToPlay;
+    public GameObject startButton;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -54,11 +61,14 @@ public class Launcher : MonoBehaviourPunCallbacks
         roomScreen.SetActive(false);
         errorScreen.SetActive(false);
         findRoomScreen.SetActive(false);
+        nameInputScreen.SetActive(false);
     }
 
     public override void OnConnectedToMaster()
     {
         PhotonNetwork.JoinLobby();
+
+        PhotonNetwork.AutomaticallySyncScene = true;
 
         loadingText.text = "Joining Lobby...";
     }
@@ -69,6 +79,21 @@ public class Launcher : MonoBehaviourPunCallbacks
         menuButtons.SetActive(true);
 
         PhotonNetwork.NickName = Random.Range(0, 1000).ToString();
+
+        if (!hasSetNickname)
+        {
+            CloseMenus();
+            nameInputScreen.SetActive(true);
+
+            if (PlayerPrefs.HasKey("playerName"))
+            {
+                nameInputField.text = PlayerPrefs.GetString("playerName");
+            }
+        }
+        else
+        {
+            PhotonNetwork.NickName = PlayerPrefs.GetString("playerName");
+        }
     }
 
     public void OpenRoomCreate()
@@ -100,6 +125,15 @@ public class Launcher : MonoBehaviourPunCallbacks
         roomNameText.text = PhotonNetwork.CurrentRoom.Name;
 
         ListAllPlayers();
+
+        if (PhotonNetwork.IsMasterClient)
+        {
+            startButton.SetActive(true);
+        }
+        else
+        {
+            startButton.SetActive(false);
+        }
     }
 
     void ListAllPlayers()
@@ -208,6 +242,38 @@ public class Launcher : MonoBehaviourPunCallbacks
 
         loadingText.text = "Joining Room...";
         loadingScreen.SetActive(true);
+    }
+
+    public void SetNickname()
+    {
+        if (!string.IsNullOrEmpty(nameInputField.text))
+        {
+            PhotonNetwork.NickName = nameInputField.text;
+
+            PlayerPrefs.SetString("playerName", nameInputField.text);
+
+            CloseMenus();
+            menuButtons.SetActive(true);
+
+            hasSetNickname = true;
+        }
+    }
+
+    public void StartGame()
+    {
+        PhotonNetwork.LoadLevel(levelToPlay);
+    }
+
+    public override void OnMasterClientSwitched(Player newMasterClient)
+    {
+        if (PhotonNetwork.IsMasterClient)
+        {
+            startButton.SetActive(true);
+        }
+        else
+        {
+            startButton.SetActive(false);
+        }
     }
 
 
