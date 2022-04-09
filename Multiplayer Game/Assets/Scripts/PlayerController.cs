@@ -21,6 +21,8 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [SerializeField] GameObject playerHitImpact;
     [SerializeField] int maxHealth = 100;
     [SerializeField] Animator anim;
+    [SerializeField] GameObject playerModel;
+    [SerializeField] Transform modelGunPoint, gunHolder;
 
 
     float verticalRotationStore;
@@ -46,14 +48,28 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
         UIController.instance.weaponHeatSlider.maxValue = maxHeatValue;
 
-        SwitchGun();
+        //SwitchGun();
+
+        photonView.RPC("SetGun", RpcTarget.All, selectedGun);
 
         currentHealth = maxHealth;
-        UIController.instance.healthLabel.text = currentHealth.ToString();
 
         //Transform newTransform = SpawnManager.instance.GetSpawnPoint();
         //transform.position = newTransform.position;
         //transform.rotation = newTransform.rotation;
+
+        if (photonView.IsMine)
+        {
+            playerModel.SetActive(false);
+
+            UIController.instance.healthLabel.text = currentHealth.ToString();
+        }
+        else
+        {
+            gunHolder.parent = modelGunPoint;
+            gunHolder.localPosition = Vector3.zero;
+            gunHolder.localRotation = Quaternion.identity;
+        }
     }
 
     // Update is called once per frame
@@ -166,7 +182,8 @@ public class PlayerController : MonoBehaviourPunCallbacks
                     selectedGun = 0;
                 }
 
-                SwitchGun();
+                //SwitchGun();
+                photonView.RPC("SetGun", RpcTarget.All, selectedGun);
 
             }
             else if (Input.GetAxisRaw("Mouse ScrollWheel") < 0f)
@@ -178,7 +195,9 @@ public class PlayerController : MonoBehaviourPunCallbacks
                     selectedGun = gunArray.Length - 1;
                 }
 
-                SwitchGun();
+                //SwitchGun();
+                photonView.RPC("SetGun", RpcTarget.All, selectedGun);
+
             }
 
             for (int i = 0; i < gunArray.Length; i++)
@@ -186,11 +205,13 @@ public class PlayerController : MonoBehaviourPunCallbacks
                 if (Input.GetKeyDown((i + 1).ToString()))
                 {
                     selectedGun = i;
-                    SwitchGun();
+                    //SwitchGun();
+                    photonView.RPC("SetGun", RpcTarget.All, selectedGun);
                 }
             }
 
             anim.SetBool("grounded", isGrounded);
+            anim.SetFloat("speed", moveDirection.magnitude);
 
 
 
@@ -269,6 +290,16 @@ public class PlayerController : MonoBehaviourPunCallbacks
         gunArray[selectedGun].gameObject.SetActive(true);
 
         gunArray[selectedGun].muzzleFlash.SetActive(false);
+    }
+
+    [PunRPC]
+    public void SetGun(int gunToSwitch)
+    {
+        if(gunToSwitch < gunArray.Length)
+        {
+            selectedGun = gunToSwitch;
+            SwitchGun();
+        }
     }
 
     [PunRPC] // runs the function in everyone at the same time
