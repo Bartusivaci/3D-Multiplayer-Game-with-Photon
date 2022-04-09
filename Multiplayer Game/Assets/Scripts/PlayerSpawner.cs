@@ -15,6 +15,7 @@ public class PlayerSpawner : MonoBehaviour
 
     public GameObject playerPrefab;
     public GameObject deathFX;
+    public float respawnTime = 5f;
 
     GameObject player;
 
@@ -34,11 +35,34 @@ public class PlayerSpawner : MonoBehaviour
         player = PhotonNetwork.Instantiate(playerPrefab.name, spawnPoint.position, spawnPoint.rotation);
     }
 
-    public void Die()
+    public void Die(string damager)
+    {
+        
+
+        UIController.instance.deathText.text = "You Got Clapped By " + damager;
+
+        // PhotonNetwork.Destroy(player);
+
+        // SpawnPlayer();
+
+        if (player != null)
+        {
+            StartCoroutine(DieCo());
+        }
+    }
+
+
+    public IEnumerator DieCo()
     {
         PhotonNetwork.Instantiate(deathFX.name, player.transform.position, Quaternion.identity);
-        
+
         PhotonNetwork.Destroy(player);
+
+        UIController.instance.deathScreen.SetActive(true);
+
+        yield return new WaitForSeconds(respawnTime);
+
+        UIController.instance.deathScreen.SetActive(false);
 
         SpawnPlayer();
     }

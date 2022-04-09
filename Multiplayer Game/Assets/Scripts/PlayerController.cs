@@ -19,6 +19,8 @@ public class PlayerController : MonoBehaviourPunCallbacks
     [SerializeField] Gun[] gunArray;
     [SerializeField] float muzzleDisplayTime;
     [SerializeField] GameObject playerHitImpact;
+    [SerializeField] int maxHealth = 100;
+    [SerializeField] Animator anim;
 
 
     float verticalRotationStore;
@@ -33,6 +35,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
     bool isOverHeated;
     int selectedGun;
     float muzzleCounter;
+    int currentHealth;
 
     // Start is called before the first frame update
     void Start()
@@ -44,6 +47,9 @@ public class PlayerController : MonoBehaviourPunCallbacks
         UIController.instance.weaponHeatSlider.maxValue = maxHeatValue;
 
         SwitchGun();
+
+        currentHealth = maxHealth;
+        UIController.instance.healthLabel.text = currentHealth.ToString();
 
         //Transform newTransform = SpawnManager.instance.GetSpawnPoint();
         //transform.position = newTransform.position;
@@ -184,6 +190,8 @@ public class PlayerController : MonoBehaviourPunCallbacks
                 }
             }
 
+            anim.SetBool("grounded", isGrounded);
+
 
 
             if (Input.GetKeyDown(KeyCode.Escape))
@@ -225,7 +233,7 @@ public class PlayerController : MonoBehaviourPunCallbacks
 
                 PhotonNetwork.Instantiate(playerHitImpact.name, hit.point, Quaternion.identity);
 
-                hit.collider.gameObject.GetPhotonView().RPC("DealDamage", RpcTarget.All, photonView.Owner.NickName); // run DealDamage() function on every player
+                hit.collider.gameObject.GetPhotonView().RPC("DealDamage", RpcTarget.All, photonView.Owner.NickName, gunArray[selectedGun].shotDamage); // run DealDamage() function on every player
             }
             else
             {
@@ -264,19 +272,30 @@ public class PlayerController : MonoBehaviourPunCallbacks
     }
 
     [PunRPC] // runs the function in everyone at the same time
-    public void DealDamage(string damager)
+    public void DealDamage(string damager, int damageAmount)
     {
-        TakeDamage(damager);
+        TakeDamage(damager, damageAmount);
     }
 
 
-    public void TakeDamage(string damager)
+    public void TakeDamage(string damager, int damageAmount)
     {
         if (photonView.IsMine)
         {
             // Debug.Log(photonView.Owner.NickName + " has been hit by " + damager);
 
-            PlayerSpawner.instance.Die();
+            currentHealth -= damageAmount;
+
+            if(currentHealth <= 0)
+            {
+                currentHealth = 0;
+
+                PlayerSpawner.instance.Die(damager);
+            }
+
+            UIController.instance.healthLabel.text = currentHealth.ToString();
+
+
         }
     }
 }
