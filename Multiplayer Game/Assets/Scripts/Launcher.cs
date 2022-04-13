@@ -220,7 +220,7 @@ public class Launcher : MonoBehaviourPunCallbacks
         allRoomButtons.Clear();
 
         roomButton.gameObject.SetActive(false);
-
+        
         for(int i = 0; i < roomList.Count; i++)
         {
             if(roomList[i].PlayerCount != roomList[i].MaxPlayers && !roomList[i].RemovedFromList)

@@ -21,10 +21,16 @@ public class UIController : MonoBehaviour
 
     public TMP_Text healthLabel;
 
+    public TMP_Text killsText;
+    public TMP_Text deathsText;
+
+    public GameObject leaderboard;
+    public LeaderboardPlayer leaderboardPlayerDisplay;
 
 
 
-    
+
+
 
 
     // Start is called before the first frame update
