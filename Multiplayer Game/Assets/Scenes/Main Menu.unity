@@ -1704,6 +1704,10 @@ MonoBehaviour:
   nameInputField: {fileID: 815643095}
   levelToPlay: Map 1
   startButton: {fileID: 1195491742}
+  allMaps:
+  - Map 1
+  - Map 2
+  changeMapBetweenRounds: 1
 --- !u!1 &452500658
 GameObject:
   m_ObjectHideFlags: 0
